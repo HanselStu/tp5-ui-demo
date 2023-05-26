@@ -1,0 +1,333 @@
+<!-- 引入公有模块 -->
+<!-- 仅练习，用于熟悉语法，如果想更规范，请自行修改，如代码有错误，请尝试自行修改。(我是小白) -->
+<!-- 请注意 不要格式化 因为里面有php的语法 html识别不了 如果格式化 请根据报错进行修改 -->
+{extend name="public/base"}
+<meta name="keywords" content="H-ui.admin v3.0,H-ui网站后台模版,后台模版下载,后台管理系统模版,HTML后台模版下载">
+<meta name="description" content="H-ui.admin v3.0，是一款由国人开发的轻量级扁平化网站后台模板，完全免费开源的网站后台管理系统模版，适合中小型CMS后台系统。">
+<title>{$title}</title>
+<style>
+    td {
+        vertical-align: middle;
+        margin: 0 auto;
+    }
+
+    .td-manage {
+        text-align: center;
+    }
+</style>
+</head>
+
+<body>
+    {block name="content"}
+    <section class="Hui-article-box">
+        <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 管理员管理 <span
+                class="c-gray en">&gt;</span> 管理员列表 <a class="btn btn-success radius r"
+                style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);"
+                title="刷新"><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+        <div class="page-container">
+            <input type="text" class="input-text" style="width:250px" placeholder="输入管理员名称" id="keyword" name=""
+                value="{$data.keyword}">
+            <button type="button" class="btn btn-success" id="search" name="" onclick="search()"><i
+                    class="Hui-iconfont">&#xe665;</i>
+                搜用户</button>
+        </div>
+        <!-- eq标签意思是：如果role 和value值相等的话，就输出eq 标签之间的内容 -->
+        {eq name="$Think.session.user_info_role" value="超级管理员"}
+        <div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="l"><a href="javascript:;" onclick="datadel()"
+                    class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a> <a href="javascript:;"
+                    onclick="admin_add('添加管理员','{:url("AdminController/adminAdd")}','800','500')"
+                    class="btn btn-primary radius"><i class="Hui-iconfont">&#xe600;</i> 添加管理员</a></span> <span
+                class="r">共有数据：<strong>{$data.count}</strong> 条</span> </div>
+        {/eq}
+        <table class="table table-border table-bordered table-bg table-hover table-sort table-striped ">
+            <thead>
+                <tr>
+                    <th scope="col" colspan="9">员工列表</th>
+                </tr>
+                <tr class="text-c">
+                    <th width="25"><input type="checkbox" name="adminRow" value="1"></th>
+                    <th width="40">ID</th>
+                    <th width="150">登录名</th>
+                    <th width="180">邮箱</th>
+                    <th>角色</th>
+                    <th width="130">更新时间</th>
+                    <th width="70">是否已启用</th>
+                    <th width="100">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {foreach ($data.list as $item)}
+                <tr class="text-c">
+                    <td><input type="checkbox" value="{$item.id}" name="adminRow"></td>
+                    <td>{$item.id}</td>
+                    <td>{$item.name}</td>
+                    <td>{$item.email}</td>
+                    <td>{$item.role}</td>
+                    <td>{$item.update_time}</td>
+                    <td class="td-status">
+                        {if condition="$item.used eq '1'"}
+                        <span class="label label-success radius">已启用</span>
+                        {else/}
+                        <span class="label label-default radius">已禁用</span>
+                        {/if}
+                    </td>
+                    <td class="td-manage">
+                        {eq name="$Think.session.user_info_role" value="超级管理员"}
+                        {if condition="$item.used eq '1'"}
+                        <a style="text-decoration:none" onClick="admin_stop(this,{$item.id})" href="javascript:;"
+                            title="停用"><i class="Hui-iconfont">&#xe615;</i></a>
+                        {else/}
+                        <a style="text-decoration:none" onClick="admin_start(this,{$item.id})" href="javascript:;"
+                            title="启用"><i class="Hui-iconfont">&#xe631;</i></a>
+                        {/if}
+                        {/eq}
+                        <!-- 写url的时候要有换行 -->
+                        <a title="编辑" href="javascript:;" 
+                        onclick="admin_edit('管理员编辑','{:url("AdminController/adminEdit",["id"=>$item['id']])}',{$item.id},'800','500')"
+                            class="ml-5"style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a>
+
+                        {eq name="$Think.session.user_info_role" value="超级管理员"}
+                        <a title="删除" href="javascript:;" onclick="admin_del(this,{$item.id})" class="ml-5"
+                            style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a>
+                        {/eq}
+                    </td>
+                </tr>
+                {/foreach}
+            </tbody>
+        </table>
+        <div id="tools" style="margin-top: 10;text-align: center;">
+            <a onclick="shang()" href="javascript:void (0);">上一页</a>&nbsp;
+            <input id="page" type="text" value="{$data.page}" onblur="page()"
+                style="width: 60px;text-align: center;border: 2px solid rgb(18, 18, 18);">&nbsp;
+            <a onclick="xia()" href="javascript:void (0);">下一页</a>&nbsp;
+            <select name="limit" id="limit" onchange="limit()">
+                <option value="5" {if condition="$data.limit eq 5" }selected{/if}>5</option>
+                <option value="8" {if condition="$data.limit eq 8" }selected{/if}>8</option>
+                <option value="10" {if condition="$data.limit eq 10" }selected{/if}>10</option>
+            </select>&nbsp;
+            <span>总共：<span id="page_count">{$data.page_count}</span>页</span>
+        </div>
+    </section>
+    {/block}
+</body>
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__STATIC__/lib/laypage/1.2/laypage.js"></script>
+<script src="__STATIC__/lib/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="__STATIC__/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="__STATIC__/lib/datatables/1.10.15/jquery.dataTables.min.js"></script>
+{block name="js"}
+<script type="text/javascript">
+    /* 渲染表格 */
+    function renderTable (data) {
+        var $tbody = $('tbody');
+        $tbody.empty(); // 清空表格数据
+        if (data.length == 0) {
+            $tbody.append('<tr class="text-c"><td colspan="8">暂无数据</td></tr>');
+            return;
+        }
+        var role = '{$Think.session.user_info_role}'; // 获取当前登录用户的角色 可以这样用 模版引擎真强大
+        // 遍历数据，生成表格行 建议使用框架 不然拼接字符串太麻烦了
+        for (var i = 0; i < data.length; i++) {
+            var item = data[ i ];
+            var $tr='';
+            $tr+=('<tr class="text-c"></tr>')
+            $tr+=('<td><input type="checkbox" value='+ item.id +' name="adminRow"></td>');
+            $tr+=('<td style="text-align: center;">' + item.id + '</td>');
+            $tr+=('<td style="text-align: center;">' + item.name + '</td>');
+            $tr+=('<td style="text-align: center;">' + item.email + '</td>');
+            $tr+=('<td style="text-align: center;">' + item.role + '</td>');
+            $tr+=('<td style="text-align: center;">' + item.update_time + '</td>');
+            
+            if (item.used == 0) {
+                $tr+=('<td class="td-status" style="text-align: center;"><span class="label radius">已禁用</span></td>');
+            } else {
+                $tr+=('<td class="td-status" style="text-align: center;"><span class="label label-success radius">已启用</span></td>');
+            }
+            $tr += ('<td class="td-manage" style="text-align: center;">');
+            if (item.used == 0) {
+                $tr+=('<a style="text-decoration:none" onClick="admin_start(this,' + item.id + ')" href="javascript:;" title="启用"><i class="Hui-iconfont">&#xe631;</i></a>');
+            } else {
+                $tr+=('<a style="text-decoration:none" onClick="admin_stop(this,' + item.id + ')" href="javascript:;" title="停用"><i class="Hui-iconfont">&#xe615;</i></a>');
+            }
+            $tr+=('<a title="编辑" href="javascript:;" onclick="admin_edit(\'管理员编辑\',\'/tp5-ui/public/index.php/index/admin_controller/adminedit/id/'+item.id+'.html\',' + item.id + ',\'800\',\'500\')" class="ml-5"style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a>');
+
+            if (role == '超级管理员') {
+                $tr+=('<a title="删除" href="javascript:;" onclick="admin_del(this,' + item.id + ')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a></td>');
+            } else {
+                $tr+=('</td>');
+            }
+
+            $tbody.append($tr);
+        }
+    }
+    /* 获取列表 */
+    function getList () {
+        // 判断是否有权限
+        if('{$Think.session.user_info_role}' !== '超级管理员'){
+            layer.msg('您没有权限查看管理员列表', { icon: 2, time: 1000 });
+            return;
+        }
+        console.log({ keyword: $.trim($('#keyword').val()), page: $('#page').val(), limit: $('#limit').val() });
+        $.ajax({
+            url: "{:url('AdminController/adminListByKey')}",
+            type: 'post',
+            data: { keyword: $.trim($('#keyword').val()), page: $('#page').val(), limit: $('#limit').val() },
+            success: function (res) {
+                layer.msg(res.msg, { icon: 1, time: 1000 });
+                // 数据渲染
+                $('strong').text(res.count);
+                $('#page_count').text(res.page_count);
+                // 渲染表格数据
+                renderTable(res.list);
+            }
+        })
+    }
+    /* 上一页 */
+    function shang () {
+        if ($('#page').val() <= 1) {
+            return;
+        }
+        var page = $('#page').val();
+        page--;
+        $('#page').val(page);
+        getList()
+    }
+    /* 下一页 */
+    function xia () {
+        if ($('#page').val() >= parseInt($('#page_count').text())) {
+            return;
+        }
+        var page = $('#page').val();
+        page++;
+        $('#page').val(page);
+        getList()
+
+    }
+    /* 输入页码 */
+    function page () {
+        // 真坑 没有value属性的 不能用val()方法
+        if ($('#page').val() > parseInt($('#page_count').text())) {
+            $('#page').val($('#page_count').text());
+        }
+        if ($('#page').val() < 1) {
+            $('#page').val(1);
+        }
+        getList()
+
+    }
+    /* 关键字搜索 */
+    function search () {
+        $('#page').val(1);
+        getList()
+    }
+    /* 改变limit */
+    function limit () {
+        $('#page').val(1);
+        getList()
+    }
+    /*
+        参数解释：
+        title	标题
+        url		请求的url
+        id		需要操作的数据id
+        w		弹出层宽度（缺省调默认值）
+        h		弹出层高度（缺省调默认值）
+    */
+    /*管理员-增加*/
+    function admin_add (title, url, w, h) {
+        layer_show(title, url, w, h);
+    }
+    /*管理员-删除*/
+    function admin_del (obj, id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            // 这里变为数组是为了方便后台处理
+            $.get("{:url('AdminController/deleteAdmin')}", { id: [ id ] }).then( res => {
+                if(res.code == 200){
+                    layer.msg('已删除!', { icon: 1, time: 1000 });
+                    parent.location.reload();
+                }else{
+                    layer.msg(res.message, { icon: 5, time: 1000 });
+                }
+            })
+            
+        });
+    }
+
+    /*管理员-编辑*/
+    function admin_edit (title, url, id, w, h) {
+        layer_show(title, url, w, h);
+    }
+    /*管理员-停用*/
+    function admin_stop (obj, id) {
+        layer.confirm('确认要停用吗？', function (index) {
+            $.get("{:url('AdminController/setStatus')}", { id: id }).then( res =>{
+               if(res.code == 200){
+                     layer.msg(res.message, { 
+                        icon: 6, time: 1000,
+                        area: ['100px', '70px'], // 设置弹窗的宽度和高度
+                        offset: 'auto' // 将弹窗的位置调整到屏幕的中央
+                     });
+                     $(obj).parents("tr").find(".td-manage").prepend('<a onClick="admin_start(this,' + id + ')" href="javascript:;" title="启用" style="text-decoration:none"><i class="Hui-iconfont">&#xe631;</i></a>');
+                     $(obj).parents("tr").find(".td-status").html('<span class="label label-default radius">已禁用</span>');
+                     $(obj).remove();
+               }else{
+                    layer.msg(res.message, { 
+                        icon: 5, time: 1000 ,
+                        area: ['100px', '70px'], // 设置弹窗的宽度和高度
+                        offset: 'auto' // 将弹窗的位置调整到屏幕的中央
+                    }) 
+               }
+            })
+        });
+    }
+
+    /*管理员-启用*/
+    function admin_start (obj, id) {
+        layer.confirm('确认要启用吗？', function (index) {
+            $.get("{:url('AdminController/setStatus')}", { id: id }).then( res =>{
+               if(res.code == 200){
+                     layer.msg(res.message, { 
+                        icon: 6, time: 1000,
+                        area: ['100px', '70px'], // 设置弹窗的宽度和高度
+                        offset: 'auto' // 将弹窗的位置调整到屏幕的中央
+                    });
+                     $(obj).parents("tr").find(".td-manage").prepend('<a onClick="admin_stop(this,' + id + ')" href="javascript:;" title="停用" style="text-decoration:none"><i class="Hui-iconfont">&#xe615;</i></a>');
+                     $(obj).parents("tr").find(".td-status").html('<span class="label label-success radius">已启用</span>');
+                     $(obj).remove();
+               }else{
+                    layer.msg(res.message, { 
+                        icon: 5, time: 1000,
+                        area: ['100px', '70px'], // 设置弹窗的宽度和高度
+                        offset: 'auto' // 将弹窗的位置调整到屏幕的中央
+                    });
+               }
+            })
+        });
+    }
+
+    /* 管理员-批量删除*/
+    function datadel () {
+        const ids = []
+        $('input[name="adminRow"]:checked').each(function () {
+            ids.push($(this).val());
+        });
+        if (ids.length === 0) {
+            layer.msg('请选择要删除的数据', { icon: 5, time: 1000 });
+            return;
+        }
+        layer.confirm('确认要删除吗？', function (index) {
+            $.get("{:url('AdminController/deleteAdmin')}", { id: ids }).then( res =>{
+               if(res.code == 200){
+                     layer.msg(res.message, { icon: 6, time: 1000 });
+                     parent.location.reload();
+               }else{
+                    layer.msg(res.message, { icon: 5, time: 1000 });
+               }
+            })
+        });
+    }
+</script>
+{/block}
+
+</html>

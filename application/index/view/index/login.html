@@ -1,0 +1,105 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link href="__STATIC__/static/h-ui/css/H-ui.min.css" rel="stylesheet" type="text/css" />
+    <link href="__STATIC__/static/h-ui.admin/css/H-ui.login.css" rel="stylesheet" type="text/css" />
+    <link href="__STATIC__/static/h-ui.admin/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="__STATIC__/lib/Hui-iconfont/1.0.8/iconfont.css" rel="stylesheet" type="text/css" />
+    <title>后台登录 - H-ui.admin.page v3.0</title>
+    <meta name="keywords" content="H-ui.admin v3.0,H-ui网站后台模版,后台模版下载,后台管理系统模版,HTML后台模版下载">
+    <meta name="description" content="H-ui.admin v3.0，是一款由国人开发的轻量级扁平化网站后台模板，完全免费开源的网站后台管理系统模版，适合中小型CMS后台系统。">
+</head>
+
+<body>
+    <input type="hidden" id="TenantId" name="TenantId" value="" />
+    <div class="header"></div>
+    <div class="loginWraper">
+        <div id="loginform" class="loginBox">
+            <form class="form form-horizontal" action="index.html" method="post">
+                <div class="row cl">
+                    <label class="form-label col-xs-3"><i class="Hui-iconfont">&#xe60d;</i></label>
+                    <div class="formControls col-xs-8">
+                        <input id="username" name="username" type="text" placeholder="账户" class="input-text size-L">
+                    </div>
+                </div>
+                <div class="row cl">
+                    <label class="form-label col-xs-3"><i class="Hui-iconfont">&#xe60e;</i></label>
+                    <div class="formControls col-xs-8">
+                        <input id="password" name="password" type="password" placeholder="密码" class="input-text size-L">
+                    </div>
+                </div>
+                <div class="row cl">
+                    <div class="formControls col-xs-8 col-xs-offset-3">
+                        <input id="verify" name="verify" class="input-text size-L" type="text" placeholder="验证码" style="width:150px;">
+                        <img id="verify_img" src="{:captcha_src()}" style="height: 40px;">
+                        <a id="nextOne" href="javascript:;"
+                            onclick="document.getElementById('verify_img').src='{:captcha_src()}?seed='+Date.now()">看不清，换一张</a>
+                    </div>
+                </div>
+                <div class="row cl">
+                    <div class="formControls col-xs-8 col-xs-offset-3">
+                        <label for="online">
+                            <input type="checkbox" name="online" id="online" value="">
+                            使我保持登录状态</label>
+                    </div>
+                </div>
+                <div class="row cl">
+                    <div class="formControls col-xs-8 col-xs-offset-3">
+                        <input name="" type="button" class="btn btn-success radius size-L"
+                            value="&nbsp;登&nbsp;&nbsp;&nbsp;&nbsp;录&nbsp;" onclick="login()">
+                        <input name="" type="reset" class="btn btn-default radius size-L"
+                            value="&nbsp;取&nbsp;&nbsp;&nbsp;&nbsp;消&nbsp;">
+                    </div>
+                    <a href="{:url('index/register')}" style="font-size: 14px;margin-left: 250px;">去注册</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="footer">Copyright 你的公司名称 by H-ui.admin.page.v3.0</div>
+</body>
+
+</html>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // 可以使用jQuery的ajax方法
+    var instance = axios.create()
+
+    // 登录
+    function login() {
+        // 建议使用jQuery来操作 不嫌麻烦的话可以使用原生js
+        let loginName = document.getElementById('username').value
+        let loginPwd = document.getElementById('password').value
+        let loginVerify = document.getElementById('verify').value
+        
+        if (loginName.trim().length < 1) {
+            alert("请输入用户名！")
+            return
+        }
+        if (loginPwd.trim().length < 1) {
+            alert("请输入密码！")
+            return
+        }
+        if (loginVerify.trim().length < 1) {
+            alert("请输入验证码！")
+            return
+        }
+        instance.post("{:url('user/login')}", {
+            username: loginName,
+            password: loginPwd,
+            verify: loginVerify
+        }).then(response => {
+
+            alert(response.data.msg)
+            // response.status == 200 说明请求成功 可以不用判断
+            if (response.status == 200 && response.data.isPass) {
+                location.href = "{:url('index/index')}"
+            } else {
+                document.getElementById('verify').value = ''
+                document.getElementById("nextOne").click()
+            }
+        }).catch(error => {
+            console.log(error);
+        })
+    }
+</script>

@@ -1,0 +1,21 @@
+<html>
+
+<head>
+    {include file="public/meta" /}
+    <!-- 自己写的 -->
+    {block name="seo"}  {/block}
+</head>
+
+<body>
+    <!-- 引入公有模块 -->
+    {include file="public/header" /}
+    {include file="public/menu" /}
+    <!-- 自己写的内容 -->
+    {block name="content"} {/block}
+    {include file="public/footer" /}
+</body>
+
+</html>
+
+<!-- 自己写的js -->
+{block name="js"} {/block}
